@@ -25,7 +25,6 @@ function CoreModule::onCreate(%this)
    ModuleDatabase.LoadExplicit( "Core_Lighting" );
    ModuleDatabase.LoadExplicit( "Core_SFX" );
    ModuleDatabase.LoadExplicit( "Core_PostFX" );
-   ModuleDatabase.LoadExplicit( "Core_Components" );
    ModuleDatabase.LoadExplicit( "Core_GameObjects" );
    
    %prefPath = getPrefpath();
@@ -70,6 +69,9 @@ function CoreModule::onCreate(%this)
       ModuleDatabase.scanModules( "tools", false );
       ModuleDatabase.LoadGroup( "Tools" );
    }
+   
+   //This is used to build the remap keybind sets for the different actionMaps.
+   $RemapCount = 0;
 }
 
 function CoreModule::onDestroy(%this)

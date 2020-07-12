@@ -13,7 +13,22 @@ function AssetBrowser::editAsset(%this, %assetDef)
    //Find out what type it is
    //If the passed-in definition param is blank, then we're likely called via a popup
    if(%assetDef $= "")
-      %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   {
+      if(AssetDatabase.isDeclaredAsset(EditAssetPopup.assetId))
+      {
+         %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+      }
+      else
+      {
+         //if it's not a valid asset at all, then it's probably a folder
+         %folder = strreplace(EditAssetPopup.assetId, ":", "/");
+         if(isDirectory(%folder))
+         {
+            AssetBrowser.navigateTo(%folder);
+         }
+      }
+   }
+      
       
    %assetType = %assetDef.getClassName();
    
@@ -83,8 +98,11 @@ function AssetBrowser::renameAsset(%this)
    if(%curFirstResponder != 0)
       %curFirstResponder.clearFirstResponder();
    
-   AssetBrowser.selectedAssetPreview-->AssetNameLabel.setActive(true);
-   AssetBrowser.selectedAssetPreview-->AssetNameLabel.setFirstResponder();
+   if(EditFolderPopup.visible == false)
+   {
+      AssetBrowser.selectedAssetPreview-->AssetNameLabel.setActive(true);
+      AssetBrowser.selectedAssetPreview-->AssetNameLabel.setFirstResponder();
+   }
 }
 
 function AssetBrowser::performRenameAsset(%this, %originalAssetName, %newName)
@@ -92,32 +110,17 @@ function AssetBrowser::performRenameAsset(%this, %originalAssetName, %newName)
    //if the name is different to the asset's original name, rename it!
    if(%originalAssetName !$= %newName)
    {
+      %moduleName = AssetBrowser.selectedModule;
+      
       if(EditAssetPopup.assetType !$= "Folder")
       {
-         %moduleName = AssetBrowser.selectedModule;
-         
-         //do a rename!
-         %success = AssetDatabase.renameDeclaredAsset(%moduleName @ ":" @ %originalAssetName, %moduleName @ ":" @ %newName);
-         
-         if(%success)
-            echo("AssetBrowser - renaming of asset " @ %moduleName @ ":" @ %originalAssetName @ " to " @ %moduleName @ ":" @ %newName @ " was a success.");
-         else 
-            echo("AssetBrowser - renaming of asset " @ %moduleName @ ":" @ %originalAssetName @ " to " @ %moduleName @ ":" @ %newName @ " was a failure.");
-         
-         if(%success)
+         if(%this.isMethod("rename" @ EditAssetPopup.assetType))
          {
-            %newAssetId = %moduleName @ ":" @ %newName;
-            %assetPath = AssetDatabase.getAssetFilePath(%newAssetId);
-            
-            //Rename any associated files as well
-            %assetDef = AssetDatabase.acquireAsset(%newAssetId);
-            %assetType = %assetDef.getClassName();
-            
-            //rename the file to match
-            %path = filePath(%assetPath);
+            %oldAssetId = %moduleName @ ":" @ %originalAssetName;
+            %assetDef = AssetDatabase.acquireAsset(%oldAssetId);
             
             //Do the rename command
-            %buildCommand = %this @ ".rename" @ %assetType @ "(" @ %assetDef @ "," @ %newAssetId @ ");";
+            %buildCommand = %this @ ".rename" @ EditAssetPopup.assetType @ "(" @ %assetDef @ "," @ %newName @ ");";
             eval(%buildCommand);
          }
       }
@@ -144,6 +147,51 @@ function AssetBrowser::performRenameAsset(%this, %originalAssetName, %newName)
    AssetBrowser-->filterTree.buildVisibleTree(); 
 }
 
+function renameAssetFile(%assetDef, %newName)
+{
+   %assetId = %assetDef.getAssetID();
+   %module = AssetDatabase.getAssetModule(%assetId);
+   %moduleId = %module.moduleId;
+   
+   %assetPath = AssetDatabase.getAssetFilePath(%assetId);
+   
+   %newPath = filePath(%assetPath) @ "/" @ %newName @ ".asset.taml";
+   %copiedSuccess = pathCopy(%assetPath, %newPath);
+   
+   if(!%copiedSuccess)
+      return "";
+   
+   %deleteSuccess = fileDelete(%assetPath);
+   
+   if(!%deleteSuccess)
+      return "";
+      
+   //Remove the old declaration
+   AssetDatabase.removeDeclaredAsset(%assetId);
+   //Add with the new file
+   AssetDatabase.addDeclaredAsset(%module, %newPath);
+   
+   //Perform the rename in the file/system itself
+   AssetDatabase.renameDeclaredAsset(%assetId, %moduleId @ ":" @ %newName);
+}
+
+function renameAssetLooseFile(%file, %newName)
+{
+   %newPath = filePath(%file) @ "/" @ %newName @ fileExt(%file);
+   %copiedSuccess = pathCopy(%file, %newPath);
+   
+   if(!%copiedSuccess)
+      return "";
+   
+   %deleteSuccess = fileDelete(%file);
+   
+   if(!%deleteSuccess)
+      return "";
+   
+   return fileName(%newPath);
+}
+
+
 function AssetNameField::onReturn(%this)
 {
    %this.clearFirstResponder();
@@ -159,7 +207,7 @@ function AssetBrowser::moveAsset(%this, %assetId, %destination)
    {
       //Do any cleanup required given the type
       if(%this.isMethod("moveFolder"))
-         eval(%this @ ".moveFolder("@EditAssetPopup.assetId@",\""@%destination@"\");");
+         eval(%this @ ".moveFolder("@%assetId@",\""@%destination@"\");");
    }
    else
    {
@@ -177,27 +225,123 @@ function AssetBrowser::moveAsset(%this, %assetId, %destination)
    %this.refresh();
 }
 
+function moveAssetFile(%assetDef, %destinationPath)
+{
+   %assetPath = makeFullPath(AssetDatabase.getAssetFilePath(%assetDef.getAssetId()));
+   %assetFilename = fileName(%assetPath);
+   
+   %newAssetPath = %destination @ "/" @ %assetFilename;
+   
+   %copiedSuccess = pathCopy(%assetPath, %destination @ "/" @ %assetFilename);
+   
+   if(!%copiedSuccess)
+      return "";
+      
+   %deleteSuccess = fileDelete(%assetPath);
+   
+   if(!%deleteSuccess)
+      return "";
+      
+   return %newAssetPath;
+}
+
+function moveAssetLooseFile(%file, %destinationPath)
+{
+   %filename = fileName(%file);
+   
+   %copiedSuccess = pathCopy(%file, %destinationPath @ "/" @ %filename);
+   
+   if(!%copiedSuccess)
+      return false;
+      
+   %deleteSuccess = fileDelete(%file);
+   return %deleteSuccess;
+}
+
 //------------------------------------------------------------
 
-function AssetBrowser::duplicateAsset(%this, %targetModule)
+function AssetBrowser::duplicateAsset(%this)
 {
-   if(%targetModule $= "")
-   {
-      //we need a module to duplicate to first
-      Canvas.pushDialog(AssetBrowser_selectModule);
-      AssetBrowser_selectModule.callback = "AssetBrowser.duplicateAsset";
-      return;
-   }
-   
    %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
    %assetType = AssetDatabase.getAssetType(EditAssetPopup.assetId);
    
-   //this acts as a redirect based on asset type and will enact the appropriate function
-   //so for a GameObjectAsset, it'll become %this.duplicateGameObjectAsset(%assetDef, %targetModule);
-   //and call to the tools/assetBrowser/scripts/assetTypes/gameObject.cs file for implementation
-   if(%this.isMethod("duplicate"@%assetType))
-      eval(%this @ ".duplicate"@%assetType@"("@%assetDef@","@%targetModule@");");
+   %trailingNum = getTrailingNumber(%assetDef.assetName);
+   if(%trailingNum != -1)
+   {
+      %trailingNum++;
+      %newName = stripTrailingNumber(%assetDef.assetName) @ (%trailingNum);
+   }
+   else
+   {
+      %newName = stripTrailingNumber(%assetDef.assetName) @ "1";
+   }
+   
+   AssetBrowser_assetNameEditTxt.text = %newName;
+   
+   AssetBrowser_assetNameEdit.callback = "AssetBrowser.doDuplicateAsset();";
+   
+   if(EditorSettings.value("AssetManagement/Assets/promptOnRename", "1") == 1)
+      Canvas.pushDialog(AssetBrowser_assetNameEdit);
+   else
+      eval(AssetBrowser_assetNameEdit.callback);
 }
+
+function AssetBrowser::doDuplicateAsset(%this)
+{
+   %assetDef = AssetDatabase.acquireAsset(EditAssetPopup.assetId);
+   %assetType = AssetDatabase.getAssetType(EditAssetPopup.assetId);
+   
+   if(AssetBrowser_assetNameEditTxt.text !$= "" && AssetBrowser_assetNameEditTxt.text !$= %assetDef.assetName)
+   {
+      //this acts as a redirect based on asset type and will enact the appropriate function
+      //so for a GameObjectAsset, it'll become %this.duplicateGameObjectAsset(%assetDef, %targetModule);
+      //and call to the tools/assetBrowser/scripts/assetTypes/gameObject.cs file for implementation
+      if(%this.isMethod("duplicate"@%assetType))
+         eval(%this @ ".duplicate"@%assetType@"("@%assetDef@","@AssetBrowser_assetNameEditTxt.text@");");
+         
+      AssetBrowser.refresh();
+   }
+}
+
+function duplicateAssetFile(%assetDef, %newAssetName)
+{
+   %assetPath = makeFullPath(AssetDatabase.getAssetFilePath(%assetDef.getAssetId()));
+   %assetFilepath = filePath(%assetPath);
+   %assetFileExt = fileExt(%assetPath);
+   
+   %newAssetPath = %assetFilepath @ "/" @ %newAssetName @ ".asset.taml";
+   
+   %copiedSuccess = pathCopy(%assetPath, %newAssetPath);
+   
+   if(!%copiedSuccess)
+      return "";
+      
+   replaceInFile(%newAssetPath, %assetDef.assetName, %newAssetName);
+   
+   %module = AssetBrowser.dirHandler.getModuleFromAddress(%newAssetPath);
+      
+   //Add with the new file
+   AssetDatabase.addDeclaredAsset(%module, %newAssetPath);
+      
+   return %newAssetPath;
+}
+
+function duplicateAssetLooseFile(%file, %newFilename)
+{
+   %filePath = filePath(%file);
+   %fileExt = fileExt(%file);
+   
+   %newPath = %filePath @ "/" @ %newFilename @ %fileExt;
+   %copiedSuccess = pathCopy(%file, %newPath);
+   
+   if(!%copiedSuccess)
+      return "";
+
+   return %newPath;
+}
+
+
+//------------------------------------------------------------
 
 function AssetBrowser::deleteAsset(%this)
 {

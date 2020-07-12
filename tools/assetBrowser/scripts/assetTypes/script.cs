@@ -47,18 +47,47 @@ function AssetBrowser::importScriptAsset(%this, %assetId)
 {
 }
 
-function AssetBrowser::dragAndDropScriptAsset(%this, %assetDef, %dropTarget)
+function AssetBrowser::onScriptAssetEditorDropped(%this, %assetDef, %position)
 {
    if(!isObject(%dropTarget))
       return;
 }
 
-function AssetBrowser::renameScriptAsset(%this, %assetDef, %originalName, %newName)
+//Renames the asset
+function AssetBrowser::renameScriptAsset(%this, %assetDef, %newAssetName)
 {
+   %newFilename = renameAssetLooseFile(%assetDef.scriptFile, %newAssetName);
+   
+   if(!%newFilename $= "")
+      return;
+
+   %assetDef.scriptFile = %newFilename;
+   %assetDef.saveAsset();
+   
+   renameAssetFile(%assetDef, %newAssetName);
 }
 
+//Deletes the asset
 function AssetBrowser::deleteScriptAsset(%this, %assetDef)
 {
+   AssetDatabase.deleteAsset(%assetDef.getAssetId(), true);
+}
+
+//Moves the asset to a new path/module
+function AssetBrowser::moveScriptAsset(%this, %assetDef, %destination)
+{
+   %currentModule = AssetDatabase.getAssetModule(%assetDef.getAssetId());
+   %targetModule = AssetBrowser.getModuleFromAddress(%destination);
+   
+   %newAssetPath = moveAssetFile(%assetDef, %destination);
+   
+   if(%newAssetPath $= "")
+      return false;
+
+   moveAssetLooseFile(%assetDef.scriptFile, %destination);
+   
+   AssetDatabase.removeDeclaredAsset(%assetDef.getAssetId());
+   AssetDatabase.addDeclaredAsset(%targetModule, %newAssetPath);
 }
 
 function AssetBrowser::buildScriptAssetPreview(%this, %assetDef, %previewData)

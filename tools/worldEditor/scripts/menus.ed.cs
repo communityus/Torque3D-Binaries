@@ -141,6 +141,9 @@ function EditorGui::buildMenus(%this)
    %fileMenu.appendItem("Save Level" TAB %cmdCtrl SPC "S" TAB "EditorSaveMissionMenu();");
    %fileMenu.appendItem("Save Level As..." TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"LevelAsset\", AssetBrowser.selectedModule, \"EditorSaveMissionAs\");");
    %fileMenu.appendItem("-");
+   %fileMenu.appendItem("Save Current Scene as Editor Default" TAB "" TAB "EditorSaveAsDefaultLevel();");
+   %fileMenu.appendItem("Reset Editor Default" TAB "" TAB "EditorResetDefaultLevel();");
+   %fileMenu.appendItem("-");
 
    if( $platform $= "windows" )
    {
@@ -149,7 +152,9 @@ function EditorGui::buildMenus(%this)
       %fileMenu.appendItem( "-" );
    }
    
-   %fileMenu.appendItem("Create Blank Terrain" TAB "" TAB "Canvas.pushDialog( CreateNewTerrainGui );");        
+   //%fileMenu.appendItem("Create Blank Terrain" TAB "" TAB "Canvas.pushDialog( CreateNewTerrainGui );");
+   %fileMenu.appendItem("Create Blank Terrain" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"TerrainAsset\", AssetBrowser.selectedModule, createTerrainBlock);");         
+     
    %fileMenu.appendItem("Import Terrain Heightmap" TAB "" TAB "Canvas.pushDialog( TerrainImportGui );");
    
    %fileMenu.appendItem("Export Terrain Heightmap" TAB "" TAB "Canvas.pushDialog( TerrainExportGui );");

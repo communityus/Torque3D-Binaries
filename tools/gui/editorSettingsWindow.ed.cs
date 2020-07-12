@@ -289,7 +289,6 @@ function ESettingsWindow::getAxisSettings(%this)
 function ESettingsWindow::getGeneralSettings(%this)
 {
    SettingsInspector.startGroup("Paths");
-   SettingsInspector.addSettingsField("WorldEditor/newLevelFile", "New Level", "filename", "");
    SettingsInspector.addSettingsField("WorldEditor/torsionPath", "Torsion Path", "filename", "");
    SettingsInspector.endGroup();
    
@@ -416,6 +415,7 @@ function ESettingsWindow::getGameGeneralSettings(%this)
 {
    SettingsInspector.startGroup("General");
    SettingsInspector.addSettingsField("General/ProjectName", "Project Name", "string", "");
+   SettingsInspector.addSettingsField("General/LightingMode", "Lighting Mode", "list", "Dictates the lighting mode the project uses", "Deferred,Forward");
    SettingsInspector.endGroup();
 } 
 
@@ -444,6 +444,11 @@ function ESettingsWindow::getAssetManagementSettings(%this)
    SettingsInspector.addSettingsField("AssetManagement/Modules/coreModulePath", "Core Module Path", "string", "");
    SettingsInspector.addSettingsField("AssetManagement/Modules/gameDataModulePath", "Game Data Module Path", "string", "");
    SettingsInspector.addSettingsField("AssetManagement/Modules/moduleExtension", "Module Extension", "string", "");
+   
+   %moduleList = ModuleDatabase.findModules(true);
+   %moduleList = strreplace(%moduleList, " ", ",");
+   
+   SettingsInspector.addSettingsField("AssetManagement/Modules/DefaultModule", "Default Module", "list", %moduleList);
    SettingsInspector.endGroup();
    
    SettingsInspector.startGroup("Assets");
@@ -467,7 +472,6 @@ function ESettingsWindow::getAssetEditingSettings(%this)
    SettingsInspector.startGroup("Assets Importing");
    SettingsInspector.addField("Edit Asset Configs", "Edit Asset Import Configs", "button", "Open Asset Import Config Editor", "", "Canvas.pushDialog(AssetImportConfigEditor);");
    SettingsInspector.addSettingsField("Assets/AssetImporDefaultConfig", "Default Asset Import Config", "list", "", %formattedConfigList); 
-   SettingsInspector.addSettingsField("Assets/AssetImporDefaultConfig", "Default Asset Import Config", "list", "", %formattedConfigList); 
    SettingsInspector.addSettingsField("Assets/AutoImport", "Automatically Import using default config", "bool", "If on, the asset importing process" @
                                                                                                                         "will attempt to automatically import any inbound assets"@
                                                                                                                         "using the default config, without prompting the import window."@
@@ -481,6 +485,8 @@ function ESettingsWindow::getAssetEditingSettings(%this)
    SettingsInspector.addSettingsField("Assets/Browser/showFolders", "Show Folders in Tiles view in Asset Browser", "bool", "");
    SettingsInspector.addSettingsField("Assets/Browser/showEmptyFolders", "Show Empty Folders in Tiles view in Asset Browser", "bool", "");
    SettingsInspector.addSettingsField("Assets/Browser/previewTileSize", "Asset Preview Tile Size", "bool", "");
+   SettingsInspector.addSettingsField("Assets/Browser/showLooseFiles", "Show Loose Files when viewing in Asset Browser", "bool", "");
+   SettingsInspector.addSettingsField("AssetManagement/Assets/promptOnRename", "Prompt on Rename", "bool", "");
    SettingsInspector.endGroup();
 }
 

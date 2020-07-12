@@ -5,7 +5,7 @@
    minExtent = "8 2";
    horizSizing = "right";
    vertSizing = "bottom";
-   profile = "GuiDefaultProfile";
+   profile = "ToolsGuiDefaultNonModalProfile";
    visible = "1";
    active = "1";
    tooltipProfile = "GuiToolTipProfile";
@@ -112,7 +112,7 @@
          profile = "ToolsGuiButtonProfile";
          visible = "1";
          active = "1";
-         command = "SelectAssetPath.showDialog(AssetBrowser.dirHandler.currentAddress, \"assetImportUpdatePath\");\nSelectAssetPath.selectWindow();";
+         command = "SelectAssetPath.showDialog(AssetBrowser.dirHandler.currentAddress, \"assetImportUpdatePath\");\nSelectAssetPathWindow.selectWindow();";
          tooltipProfile = "GuiToolTipProfile";
          tooltip = "New Module";
          hovertime = "1000";
@@ -463,7 +463,7 @@
             };
          };
       };
-      new GuiButtonCtrl() {
+      new GuiButtonCtrl(DoAssetImportButton) {
          text = "Done";
          groupNum = "-1";
          buttonType = "PushButton";
@@ -503,25 +503,29 @@
          canSave = "1";
          canSaveDynamicFields = "0";
       };
-      new GuiTextCtrl(AssetImportSummarization) {
-         maxLength = "1024";
-         margin = "0 0 0 0";
-         padding = "0 0 0 0";
-         anchorTop = "1";
-         anchorBottom = "0";
-         anchorLeft = "1";
-         anchorRight = "0";
-         position = "4 554";
-         extent = "574 23";
+      new GuiBitmapButtonCtrl(ImportLogButton) {
+         bitmap = "tools/gui/images/iconInformation.png";
+         bitmapMode = "Centered";
+         autoFitExtents = "0";
+         useModifiers = "0";
+         useStates = "1";
+         masked = "0";
+         groupNum = "-1";
+         buttonType = "PushButton";
+         useMouseEvents = "0";
+         position = "5 555";
+         extent = "22 22";
          minExtent = "8 2";
-         horizSizing = "width";
-         vertSizing = "top";
-         profile = "ToolsGuiTextProfile";
+         horizSizing = "left";
+         vertSizing = "bottom";
+         profile = "ToolsGuiButtonProfile";
          visible = "1";
          active = "1";
+         command = "ImportAssetWindow.toggleLogWindow();";
          tooltipProfile = "GuiToolTipProfile";
+         tooltip = "View Import Log";
          hovertime = "1000";
-         isContainer = "1";
+         isContainer = "0";
          canSave = "1";
          canSaveDynamicFields = "0";
       };

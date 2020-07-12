@@ -87,9 +87,9 @@ function AssetBrowser::buildPopupMenus(%this)
          class = "EditorWorldMenu";
          //isPopup = true;
 
-         item[ 0 ] = "Create Component" TAB AddNewComponentAssetPopup;
-         item[ 1 ] = "Create Script" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ScriptAsset\", AssetBrowser.selectedModule);";
-         item[ 2 ] = "Create State Machine" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"StateMachineAsset\", AssetBrowser.selectedModule);";
+         //item[ 0 ] = "Create Component" TAB AddNewComponentAssetPopup;
+         item[ 0 ] = "Create Script" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ScriptAsset\", AssetBrowser.selectedModule);";
+         item[ 1 ] = "Create State Machine" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"StateMachineAsset\", AssetBrowser.selectedModule);";
          //item[ 3 ] = "-";
          //item[ 3 ] = "Create Game Object" TAB "" TAB "AssetBrowser.createNewGameObjectAsset(\"NewGameObject\", AssetBrowser.selectedModule);";
       };
@@ -104,24 +104,24 @@ function AssetBrowser::buildPopupMenus(%this)
          class = "EditorWorldMenu";
          //isPopup = true;
 
-         item[ 0 ] = "Material" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"MaterialAsset\", AssetBrowser.selectedModule);";//"createNewMaterialAsset(\"NewMaterial\", AssetBrowser.selectedModule);";
-         item[ 1 ] = "Terrain Material" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"TerrainMaterialAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewImageAsset(\"NewImage\", AssetBrowser.selectedModule);";
-         item[ 2 ] = "Image" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ImageAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewImageAsset(\"NewImage\", AssetBrowser.selectedModule);";
+         item[ 0 ] = "Create Material" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"MaterialAsset\", AssetBrowser.selectedModule);";//"createNewMaterialAsset(\"NewMaterial\", AssetBrowser.selectedModule);";
+         item[ 1 ] = "Create Terrain Material" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"TerrainMaterialAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewImageAsset(\"NewImage\", AssetBrowser.selectedModule);";
+         item[ 2 ] = "Create Image" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ImageAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewImageAsset(\"NewImage\", AssetBrowser.selectedModule);";
          item[ 3 ] = "-";
-         item[ 4 ] = "Terrain Data" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"TerrainAsset\", AssetBrowser.selectedModule);";
+         item[ 4 ] = "Create Terrain Data" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"TerrainAsset\", AssetBrowser.selectedModule);";
          item[ 5 ] = "-";         
-         item[ 6 ] = "Shape" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"Shape\", AssetBrowser.selectedModule);";
-         item[ 7 ] = "Shape Animation" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ShapeAnimationAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewShapeAnimationAsset(\"NewShapeAnimation\", AssetBrowser.selectedModule);";
+         item[ 6 ] = "Create Shape" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"Shape\", AssetBrowser.selectedModule);";
+         item[ 7 ] = "Create Shape Animation" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ShapeAnimationAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewShapeAnimationAsset(\"NewShapeAnimation\", AssetBrowser.selectedModule);";
          item[ 8 ] = "-";
-         item[ 9 ] = "GUI" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"GUIAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewGUIAsset(\"NewGUI\", AssetBrowser.selectedModule);";
+         item[ 9 ] = "Create GUI" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"GUIAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewGUIAsset(\"NewGUI\", AssetBrowser.selectedModule);";
          item[ 10 ] = "-";
-         item[ 11 ] = "Post Effect" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"PostEffectAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewPostEffectAsset(\"NewPostEffect\", AssetBrowser.selectedModule);";
+         item[ 11 ] = "Create Post Effect" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"PostEffectAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewPostEffectAsset(\"NewPostEffect\", AssetBrowser.selectedModule);";
          item[ 12 ] = "-";
-         item[ 13 ] = "Sound" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"SoundAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewSoundAsset(\"NewSound\", AssetBrowser.selectedModule);";
+         item[ 13 ] = "Create Sound" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"SoundAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewSoundAsset(\"NewSound\", AssetBrowser.selectedModule);";
          item[ 14 ] = "-";
-         item[ 15 ] = "Particle Effect" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ParticleEffectAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewParticleEffectAsset(\"NewParticleEffect\", AssetBrowser.selectedModule);";
+         item[ 15 ] = "Create Particle Effect" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"ParticleEffectAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewParticleEffectAsset(\"NewParticleEffect\", AssetBrowser.selectedModule);";
          item[ 16 ] = "-";
-         item[ 17 ] = "Cubemap" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CubemapAsset\", AssetBrowser.selectedModule);";
+         item[ 17 ] = "Create Cubemap" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CubemapAsset\", AssetBrowser.selectedModule);";
       };
    }
    
@@ -139,7 +139,7 @@ function AssetBrowser::buildPopupMenus(%this)
          item[ 3 ] = "Create Component Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppComponentAsset\", AssetBrowser.selectedModule);";
          item[ 4 ] = "Create Script Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppScriptClass\", AssetBrowser.selectedModule);";*/
          
-         item[ 0 ] = "C++ Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppAsset\", AssetBrowser.selectedModule);";
+         item[ 0 ] = "Create C++ Class" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"CppAsset\", AssetBrowser.selectedModule);";
       };
       //%this.AddNewScriptAssetPopup.insertSubMenu(0, "Create Component", AddNewComponentAssetPopup);
    }
@@ -151,17 +151,19 @@ function AssetBrowser::buildPopupMenus(%this)
          superClass = "MenuBuilder";
          class = "EditorWorldMenu";
          
-         item[0] = "Folder" TAB "" TAB "AssetBrowser.CreateNewFolder();";
+         item[0] = "Create Folder" TAB "" TAB "AssetBrowser.CreateNewFolder();";
          item[1] = "-";
-         item[2] = "Code Asset" TAB AddNewScriptAssetPopup;
+         item[2] = "Create Code Asset" TAB AddNewScriptAssetPopup;
          item[3] = "-";
-         item[4] = "Art Asset" TAB AddNewArtAssetPopup;
+         item[4] = "Create Art Asset" TAB AddNewArtAssetPopup;
          item[5] = "-";
-         item[6] = "Level" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"LevelAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewLevelAsset(\"NewLevel\", AssetBrowser.selectedModule);";
+         item[6] = "Create Level" TAB "" TAB "AssetBrowser.setupCreateNewAsset(\"LevelAsset\", AssetBrowser.selectedModule);";//"AssetBrowser.createNewLevelAsset(\"NewLevel\", AssetBrowser.selectedModule);";
          item[7] = "-";
-         item[8] = "C++ Asset" TAB AddNewCppAssetPopup;
+         item[8] = "Create C++ Asset" TAB AddNewCppAssetPopup;
          item[9] = "-";
-         item[10] = "New Module" TAB "" TAB "AssetBrowser.CreateNewModule();";
+         item[10] = "Create New Module" TAB "" TAB "AssetBrowser.CreateNewModule();";
+         item[11] = "-";
+         item[12] = "Import Loose Files" TAB "" TAB "AssetBrowser.importLooseFiles();";
       
       };
    }
@@ -176,12 +178,27 @@ function AssetBrowser::buildPopupMenus(%this)
          
          item[ 0 ] = "New Asset" TAB AddNewAssetPopup;
          item[ 1 ] = "Reload Module" TAB "" TAB "AssetBrowser.reloadModule();";
-         Item[ 2 ] = "-";
-         Item[ 3 ] = "Edit Module" TAB "" TAB "AssetBrowser.editModuleInfo();";
-         Item[ 4 ] = "-";
-         Item[ 5 ] = "Duplicate Module" TAB "" TAB "AssetBrowser.copyModule();";
-         Item[ 6 ] = "-";
-         Item[ 7 ] = "Delete Module" TAB "" TAB "AssetBrowser.deleteModule();";
+         Item[ 2 ] = "Edit Module" TAB "" TAB "AssetBrowser.editModuleScript();";
+         Item[ 3 ] = "-";
+         Item[ 4 ] = "Module Properties" TAB "" TAB "AssetBrowser.editModuleInfo();";
+         Item[ 5 ] = "-";
+         Item[ 6 ] = "Duplicate Module" TAB "" TAB "AssetBrowser.copyModule();";
+         Item[ 7 ] = "-";
+         Item[ 8 ] = "Delete Module" TAB "" TAB "AssetBrowser.deleteModule();";
+         item[ 9 ] = "-";
+         item[ 10 ] = "Import Loose Files" TAB "" TAB "AssetBrowser.importLooseFiles();";
+      };
+   }
+   
+   if( !isObject( EditNonModulePopup ) )
+   {
+      new PopupMenu( EditNonModulePopup )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         //isPopup = true;
+         
+         item[ 0 ] = "Turn Folder into Module" TAB "" TAB "AssetBrowser.ConvertFolderIntoModule();";
       };
    }
    
@@ -205,6 +222,8 @@ function AssetBrowser::buildPopupMenus(%this)
          Item[ 3 ] = "Duplicate Folder" TAB "" TAB "AssetBrowser.duplicateAsset();";
          item[ 4 ] = "-";
          item[ 5 ] = "Delete Folder" TAB "" TAB "AssetBrowser.deleteAsset();";
+         item[ 6 ] = "-";
+         item[ 7 ] = "Import Loose Files" TAB "" TAB "AssetBrowser.importLooseFiles();";
       };
    }
    
@@ -218,22 +237,6 @@ function AssetBrowser::buildPopupMenus(%this)
          
          item[ 0 ] = "Toggle Autoloading of Script Assets" TAB "" TAB "AssetBrowser.toggleAutoloadAsset(\"Script\");";
       };
-   }
-   
-   //Asset Preview size presets
-   if( !isObject( AssetPreviewSizePopup ) )
-   {
-      new PopupMenu( AssetPreviewSizePopup )
-      {
-         superClass = "MenuBuilder";
-         class = "EditorWorldMenu";
-         
-         item[ 0 ] = "Small" TAB "" TAB "AssetBrowser.setPreviewSize(\"Small\");";
-         item[ 1 ] = "Medium" TAB "" TAB "AssetBrowser.setPreviewSize(\"Medium\");";
-         Item[ 2 ] = "Large" TAB "" TAB "AssetBrowser.setPreviewSize(\"Large\");";
-      };
-      
-      AssetPreviewSizePopup.checkItem(0, true);
    }
    
    if( !isObject( AssetTypeListPopup ) )
@@ -257,8 +260,6 @@ function AssetBrowser::buildPopupMenus(%this)
       }
    }
    
-   AssetBrowser.toggleAssetTypeFilter(0);  
-   
    //Browser visibility menu
    if( !isObject( BrowserVisibilityPopup ) )
    {
@@ -278,8 +279,6 @@ function AssetBrowser::buildPopupMenus(%this)
          item[ 7 ] = "Filter by Asset Type" TAB AssetTypeListPopup;
          item[ 8 ] = "-";
          item[ 9 ] = "Enable Auto-refresh" TAB "" TAB "AssetBrowser.toggleAutorefresh();";
-         Item[ 10 ] = "-";
-         Item[ 11 ] = "Asset Preview Size" TAB AssetPreviewSizePopup;
       };
       
       BrowserVisibilityPopup.enableItem(5, false);
@@ -296,9 +295,9 @@ function AssetBrowser::buildPopupMenus(%this)
          superClass = "MenuBuilder";
          class = "EditorWorldMenu";
          
-         item[ 0 ] = "Import Legacy Game" TAB "" TAB "AssetBrowser.importLegacyGame();";
+         item[ 0 ] = "Import Project Loose Files" TAB "" TAB "AssetBrowser.importLooseFiles();";
          Item[ 1 ] = "-";
-         item[ 2 ] = "Import new assets" TAB "" TAB "AssetBrowser.importNewAssetFile();";
+         item[ 2 ] = "Import new assets" TAB "" TAB "Canvas.pushDialog(AssetImportCtrl);";
       };
    }
    
@@ -341,7 +340,27 @@ function AssetBrowser::buildPopupMenus(%this)
    }
 
    //
+   // Import Asset Actions
    //
+   if( !isObject( ImportAssetMaterialMaps ) )
+   {
+      %this.ImportAssetActions = new PopupMenu( ImportAssetMaterialMaps )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         
+         item[0] = "Add Color Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Color\");";
+         item[1] = "Add Normal Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Normal\");";
+         item[2] = "Add Composite Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Composite\");";
+         item[3] = "Add Metalness Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Metalness\");";
+         item[4] = "Add AO Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"AO\");";
+         item[5] = "Add Roughness Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Roughness\");";
+         item[6] = "Add Glow Map" TAB "" TAB "ImportAssetWindow.addMaterialMap(\"Glow\");";
+         Item[7] = "-";
+         Item[8] = "Add Existing Image Asset" TAB "" TAB "ImportAssetWindow.addExistingImageAsset();";
+      };
+   }
+   
    if( !isObject( ImportAssetActions ) )
    {
       %this.ImportAssetActions = new PopupMenu( ImportAssetActions )
@@ -349,8 +368,38 @@ function AssetBrowser::buildPopupMenus(%this)
          superClass = "MenuBuilder";
          class = "EditorWorldMenu";
          
-         item[0] = "Add asset" TAB "" TAB "ImportAssetWindow.addNewImportingAsset();";
-         item[1] = "Remove asset" TAB "" TAB "ImportAssetWindow.removeImportingAsset();";
+         item[0] = "Add New Asset" TAB "" TAB "ImportAssetWindow.addNewImportingAsset();";
+         item[1] = "Import Existing File as Asset" TAB "" TAB "ImportAssetWindow.importExistingFile();";
+         item[2] = "-";
+         item[3] = "Add Reference to Existing Asset" TAB "" TAB "ImportAssetWindow.addRefExistingAsset();";
+         item[4] = "-";
+         item[5] = "Remove asset" TAB "" TAB "ImportAssetWindow.removeImportingAsset();";
+      };
+   }
+   
+   if( !isObject( AddNewToolPopup ) )
+   {
+      new PopupMenu( AddNewToolPopup )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         isPopup = true;
+         
+         item[ 0 ] = "Create New Editor Tool" TAB "" TAB "AssetBrowser.createNewEditorTool(AddNewToolPopup.targetFolder);";
+      };
+      
+      AddNewModulePopup.enableItem(1, false);
+   }
+   
+   if( !isObject( EditCollectionSets ) )
+   {
+      new PopupMenu( EditCollectionSets )
+      {
+         superClass = "MenuBuilder";
+         class = "EditorWorldMenu";
+         //isPopup = true;
+         
+         item[ 0 ] = "Delete Collection Set" TAB "" TAB "AssetBrowser.deleteCollectionSet();";
       };
    }
 }

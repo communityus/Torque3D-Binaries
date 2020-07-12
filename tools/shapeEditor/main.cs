@@ -121,7 +121,7 @@ function ShapeEditorPlugin::onWorldEditorStartup(%this)
 
    // Add ourselves to the Editor Settings window
    exec( "./gui/ShapeEditorSettingsTab.gui" );
-   ESettingsWindow.addTabPage( EShapeEditorSettingsPage );
+   //ESettingsWindow.addTabPage( EShapeEditorSettingsPage );
 
    GuiWindowCtrl::attach(ShapeEdPropWindow, ShapeEdSelectWindow);
    ShapeEdAnimWindow.resize( -1, 526, 593, 53 );
@@ -148,6 +148,13 @@ function ShapeEditorPlugin::onWorldEditorStartup(%this)
 function ShapeEditorPlugin::openShapeAsset(%this, %assetDef)
 {
    %this.selectedAssetDef = %assetDef;
+   %this.open(%this.selectedAssetDef.fileName);
+}
+
+function ShapeEditorPlugin::openShapeAssetId(%this, %assetId)
+{
+   %this.selectedAssetDef = AssetDatabase.acquireAsset(%assetId);
+   //%this.selectedAssetDef = %assetDef;
    %this.open(%this.selectedAssetDef.fileName);
 }
 

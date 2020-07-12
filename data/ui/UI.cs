@@ -14,7 +14,6 @@
 
 function UI::onCreate( %this )
 {
-   %bool = true;
 }
 
 function UI::onDestroy( %this )
@@ -37,59 +36,54 @@ function UI::initClient(%this)
    exec("./scripts/profiles.cs");
    
    //Now gui files
-   exec("./guis/mainMenu.gui");
+   exec("./guis/guiGamepadButton.cs");
+   exec("./guis/guiGamepadButton.gui");
+   
    exec("./guis/mainMenu.cs");
+   exec("./guis/mainMenu.gui");
    
-   exec("./guis/chooseLevelDlg.gui");
    exec("./guis/chooseLevelDlg.cs");
+   exec("./guis/chooseLevelDlg.gui");
    
-   exec("./guis/joinServerMenu.gui");
    exec("./guis/joinServerMenu.cs");
+   exec("./guis/joinServerMenu.gui");
    
    exec("./guis/loadingGui.gui");
    
-   exec("./guis/optionsMenu.gui");
    exec("./guis/optionsMenu.cs");
+   exec("./guis/optionsMenu.gui");
    
-   exec("./guis/pauseMenu.gui");
    exec("./guis/pauseMenu.cs");
+   exec("./guis/pauseMenu.gui");
    
    exec("./guis/remapDlg.gui");
    exec("./guis/remapConfirmDlg.gui");
    
-   exec("./guis/profiler.gui");
    exec("./guis/profiler.cs");
+   exec("./guis/profiler.gui");
    
    exec("./guis/netGraphGui.gui");
    exec("./guis/RecordingsDlg.gui");
    
-   //exec("./guis/FileDialog.gui");
-   //exec("./guis/FileDialog.cs");
-   
-   exec("./guis/guiMusicPlayer.gui");
    exec("./guis/guiMusicPlayer.cs");
+   exec("./guis/guiMusicPlayer.gui");
    
-   exec("./guis/startupGui.gui");
    exec("./guis/startupGui.cs");
+   exec("./guis/startupGui.gui");
    
    // Load Editor Dialogs
-   exec("./guis/messageBoxOk.gui");
-   exec("./guis/messageBoxYesNo.gui");
+   exec("./guis/messageBoxDlg.gui");
    
    //Load scripts
-   exec("./scripts/optionsList.cs");
-   exec("./scripts/displayMenu.cs");
-   exec("./scripts/graphicsMenu.cs");
    exec("./scripts/controlsMenu.cs");
-   exec("./scripts/audioMenu.cs");
    exec("./scripts/messageBoxes.cs");
    exec("./scripts/help.cs");
    exec("./scripts/cursors.cs");
+   exec("./scripts/utility.cs");
+   exec("./scripts/default.keybinds.cs");
    
    exec("./guis/menuGraphics.gui");
    exec("./guis/menuGraphics.cs");
-   
-   //exec("./scripts/GuiTreeViewCtrl.cs");
    
    loadStartup();
 }

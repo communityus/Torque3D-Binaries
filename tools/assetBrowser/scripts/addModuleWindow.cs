@@ -19,6 +19,11 @@
 // FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
 // IN THE SOFTWARE.
 //-----------------------------------------------------------------------------
+function AssetBrowser_addModuleWindow::onWake(%this)
+{
+   %this-->ModuleName.setText("");
+}
+
 function AssetBrowser_addModuleWindow::onGainFirstResponder(%this)
 {
    %this-->moduleName.setFirstResponder();
@@ -96,9 +101,7 @@ function AssetBrowser_addModuleWindow::CreateNewModule(%this)
    ModuleDatabase.ignoreLoadedGroups(false);
    
    //force a reload of the Module lists
-   NewAssetModuleList.refresh();
-   GameObjectModuleList.refresh();
-   ImportAssetModuleList.refresh();
+   AssetBrowser.refresh();
    
    AssetBrowser.newModuleId = %newModuleName;
    

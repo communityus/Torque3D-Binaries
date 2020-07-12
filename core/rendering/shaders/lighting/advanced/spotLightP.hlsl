@@ -39,7 +39,6 @@ struct ConvexConnectP
 
 TORQUE_UNIFORM_SAMPLER2D(deferredBuffer, 0);
 TORQUE_UNIFORM_SAMPLER2D(shadowMap, 1);
-TORQUE_UNIFORM_SAMPLER2D(dynamicShadowMap,2);
 
 #ifdef USE_COOKIE_TEX
 
@@ -65,7 +64,6 @@ uniform float2 lightSpotParams;
 uniform float4 lightMapParams;
 uniform float4 vsFarPlane;
 uniform float4x4 worldToLightProj;
-uniform float4x4 dynamicWorldToLightProj;
 uniform float4 lightParams;
 
 uniform float shadowSoftness;
@@ -112,16 +110,10 @@ float4 main(   ConvexConnectP IN ) : SV_TARGET
          float2 shadowCoord = ( ( pxlPosLightProj.xy / pxlPosLightProj.w ) * 0.5 ) + float2( 0.5, 0.5 );
          shadowCoord.y = 1.0f - shadowCoord.y;
 
-         float4 dynPxlPosLightProj = mul( dynamicWorldToLightProj, float4( surface.P, 1 ) );
-         float2 dynShadowCoord = ( ( dynPxlPosLightProj.xy / dynPxlPosLightProj.w ) * 0.5 ) + float2( 0.5, 0.5 );
-         dynShadowCoord.y = 1.0f - dynShadowCoord.y;
-
-         //distance to light in shadow map space
+          //distance to light in shadow map space
          float distToLight = pxlPosLightProj.z / lightRange;
          float dynDistToLight = dynPxlPosLightProj.z / lightRange;
-         float static_shadowed = softShadow_filter(TORQUE_SAMPLER2D_MAKEARG(shadowMap), ssPos.xy, shadowCoord, shadowSoftness, distToLight, surfaceToLight.NdotL, lightParams.y);
-         float dynamic_shadowed = softShadow_filter(TORQUE_SAMPLER2D_MAKEARG(dynamicShadowMap), ssPos.xy, dynShadowCoord, shadowSoftness, dynDistToLight, surfaceToLight.NdotL, lightParams.y);
-         float shadowed = min(static_shadowed, dynamic_shadowed);
+         float shadowed = softShadow_filter(TORQUE_SAMPLER2D_MAKEARG(shadowMap), ssPos.xy, shadowCoord, shadowSoftness, distToLight, surfaceToLight.NdotL, lightParams.y);
       #endif      
 
       float3 lightCol = lightColor.rgb;
@@ -134,6 +126,35 @@ float4 main(   ConvexConnectP IN ) : SV_TARGET
       // the lighting else we get specular in the dark
       // regions of the cookie texture.
       lightCol *= max(cookie.r, max(cookie.g, cookie.b));
+   #endif
+
+   #ifdef DIFFUSE_LIGHT_VIZ
+      float attenuation = getDistanceAtt(surfaceToLight.Lu, radius);
+      float3 factor = lightColor * max(surfaceToLight.NdotL, 0) * shadow * lightIntensity * attenuation;
+
+      float3 diffuse = BRDF_GetDebugDiffuse(surface,surfaceToLight) * factor;
+      float3 final = max(0.0f, diffuse) * getSpotAngleAtt(-surfaceToLight.L, lightDirection, lightSpotParams );
+      return float4(final, 0);
+   #endif
+
+   #ifdef SPECULAR_LIGHT_VIZ
+   float attenuation = getDistanceAtt(surfaceToLight.Lu, radius);
+      float3 factor = lightColor * max(surfaceToLight.NdotL, 0) * shadow * lightIntensity * attenuation;
+
+      float3 diffuse = BRDF_GetDebugSpecular(surface,surfaceToLight) * factor;
+      float3 final = max(0.0f, diffuse) * getSpotAngleAtt(-surfaceToLight.L, lightDirection, lightSpotParams );
+      return float4(final, 0);
+   #endif
+
+   #ifdef DETAIL_LIGHTING_VIZ
+      float attenuation = getDistanceAtt(surfaceToLight.Lu, radius);
+      vec3 factor = lightColor * max(surfaceToLight.NdotL, 0) * shadow * lightIntensity * attenuation;
+
+      vec3 diffuse = BRDF_GetDiffuse(surface,surfaceToLight) * factor;
+      vec3 spec = BRDF_GetSpecular(surface,surfaceToLight) * factor;
+
+      vec3 final = max(vec3(0.0f), diffuse + spec * surface.F) * getSpotAngleAtt(-surfaceToLight.L, lightDirection, lightSpotParams );
+      return final;
    #endif
 
       //get Punctual light contribution   

@@ -43,16 +43,69 @@ function AssetBrowser::editMaterialAsset(%this, %assetDef)
    MaterialEditorGui.setActiveMaterial( %assetDef.materialDefinitionName );
    
    AssetBrowser.hideDialog();
+   
+   //
+   //
+   /*%assetDef.materialDefinitionName.reload();
+   $Tools::materialEditorList = "";
+   EWorldEditor.clearSelection();
+   MaterialEditorGui.currentObject = 0;
+   MaterialEditorGui.currentMode = "asset";
+   MaterialEditorGui.currentMaterial = %assetDef.materialDefinitionName;
+   MaterialEditorGui.setActiveMaterial( %assetDef.materialDefinitionName);
+   EditorGui.setEditor(MaterialEditorPlugin);
+   AssetBrowser.hideDialog();*/
+}
+
+//Renames the asset
+function AssetBrowser::renameMaterialAsset(%this, %assetDef, %newAssetName)
+{
+   %newFilename = renameAssetLooseFile(%assetDef.scriptPath, %newAssetName);
+   
+   if(!%newFilename $= "")
+      return;
+      
+   %assetDef.scriptPath = %newFilename;
+   %assetDef.saveAsset();
+   
+   renameAssetFile(%assetDef, %newAssetName);
+}
+
+//Deletes the asset
+function AssetBrowser::deleteMaterialAsset(%this, %assetDef)
+{
+   AssetDatabase.deleteAsset(%assetDef.getAssetId(), true);
+}
+
+//Moves the asset to a new path/module
+function AssetBrowser::moveMaterialAsset(%this, %assetDef, %destination)
+{
+   %currentModule = AssetDatabase.getAssetModule(%assetDef.getAssetId());
+   %targetModule = AssetBrowser.getModuleFromAddress(%destination);
+   
+   %newAssetPath = moveAssetFile(%assetDef, %destination);
+   
+   if(%newAssetPath $= "")
+      return false;
+
+   moveAssetLooseFile(%assetDef.scriptPath, %destination);
+   
+   AssetDatabase.removeDeclaredAsset(%assetDef.getAssetId());
+   AssetDatabase.addDeclaredAsset(%targetModule, %newAssetPath);
 }
 
 function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
 {
+   ImportActivityLog.add("Preparing Material for Import: " @ %assetItem.assetName);
+   
    //Iterate over to find appropriate images for
          
    //Fetch just the fileBase name
    %fileDir = filePath(%assetItem.filePath);
    %fileName = fileBase(%assetItem.filePath);
    %fileExt = fileExt(%assetItem.filePath);
+   
+   %assetItem.generatedAsset = true;
    
    //Check if we need to filter this material out or not
    if(getAssetImportConfigValue("Materials/IgnoreMaterials", "") !$= "")
@@ -66,6 +119,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
         {
             //We fit the bill, ignore this material and skip it
             %assetItem.skip = true;
+            
+            ImportActivityLog.add(%assetItem.assetName @ " has been ignored due to config Materials/IgnoreMaterials settings");
+            
             return;  
         }
       }
@@ -73,7 +129,22 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
    
    if(getAssetImportConfigValue("Materials/PopulateMaterialMaps", "1") == 1)
    {
-      %materialItemId = ImportAssetTree.findItemByObjectId(%assetItem);
+      ImportActivityLog.add("Attempting to Auto-Populate Material Maps");
+      
+      for(%i=0; %i < %assetItem.childAssetItems.count(); %i++)
+      {
+         %childAssetItem = %assetItem.childAssetItems.getKey(%i);
+         
+         if(!isObject(%childAssetItem) || %childAssetItem.skip || %childAssetItem.processed == true || %childAssetItem.assetType !$= "ImageAsset")
+            return;
+            
+         if(%childAssetItem.imageType $= "Albedo")
+         {
+            %assetItem.diffuseImageAsset = %childAssetItem;
+         }
+      }
+      
+      /*%materialItemId = ImportAssetTree.findItemByObjectId(%assetItem);
       
       if(%assetItem.diffuseImageAsset $= "")
       {
@@ -83,15 +154,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %diffuseAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.diffuseImageAsset = %diffuseAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%diffuseTypeSuffixes, ",;") == 0 ? "_albedo" : getToken(%diffuseTypeSuffixes, ",;", 0);
-            %diffuseAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Diffuse Map Image Asset via file: " @ %targetFilePath);
+            
+            %diffuseAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.diffuseImageAsset = %diffuseAsset;
          }
       }
@@ -106,15 +171,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %normalAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.normalImageAsset = %normalAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%normalTypeSuffixes, ",;") == 0 ? "_normal" : getToken(%normalTypeSuffixes, ",;", 0);
-            %normalAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Normal Map Image Asset via file: " @ %targetFilePath);
+            
+            %normalAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.normalImageAsset = %normalAsset;
          }
       }
@@ -127,15 +186,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %metalAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.metalImageAsset = %metalAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%metalnessTypeSuffixes, ",;") == 0 ? "_metalness" : getToken(%metalnessTypeSuffixes, ",;", 0);
-            %metalAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Metalness Map Image Asset via file: " @ %targetFilePath);
+            
+            %metalAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.metalImageAsset = %metalAsset;
          }
       }
@@ -148,15 +201,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %roughnessAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.roughnessImageAsset = %roughnessAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%roughnessTypeSuffixes, ",;") == 0 ? "_roughness" : getToken(%roughnessTypeSuffixes, ",;", 0);
-            %roughnessAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Roughness Map Image Asset via file: " @ %targetFilePath);
+            
+            %roughnessAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.roughnessImageAsset = %roughnessAsset;
          }
       }
@@ -169,15 +216,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %smoothnessAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.SmoothnessImageAsset = %smoothnessAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%smoothnessTypeSuffixes, ",;") == 0 ? "_smoothness" : getToken(%smoothnessTypeSuffixes, ",;", 0);
-            %smoothnessAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Smoothness Map Image Asset via file: " @ %targetFilePath);
+            
+            %smoothnessAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.SmoothnessImageAsset = %smoothnessAsset;
          }
       }
@@ -190,15 +231,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %AOAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.AOImageAsset = %AOAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%aoTypeSuffixes, ",;") == 0 ? "_AO" : getToken(%aoTypeSuffixes, ",;", 0);
-            %AOAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated AO Map Image Asset via file: " @ %targetFilePath);
+            
+            %AOAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.AOImageAsset = %AOAsset;
          }
       }
@@ -211,15 +246,9 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          if(%targetFilePath !$= "")
          {
-            %compositeAsset = AssetBrowser.addImportingAsset("Image", %targetFilePath, %assetItem);
-            %assetItem.compositeImageAsset = %compositeAsset;
-         }
-         else if(getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 1)
-         {
-            //In the event we don't have this image asset, but we DO wish to always display the field(affording when names don't aline with
-            //the material name), then we go ahead and create a blank entry
-            %suff = getTokenCount(%compositeTypeSuffixes, ",;") == 0 ? "_composite" : getToken(%compositeTypeSuffixes, ",;", 0);
-            %compositeAsset = AssetBrowser.addImportingAsset("Image", %assetItem.AssetName @ %suff, %assetItem);
+            ImportActivityLog.add("Auto-Populated Composite Map Image Asset via file: " @ %targetFilePath);
+            
+            %compositeAsset = AssetBrowser.addImportingAsset("ImageAsset", %targetFilePath, %assetItem);
             %assetItem.compositeImageAsset = %compositeAsset;
          }
       }
@@ -227,8 +256,7 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
       //If after the above we didn't find any, check to see if we should be generating one
       if(%assetItem.compositeImageAsset $= "" && 
          (%assetItem.roughnessImageAsset !$= "" || %assetItem.AOImageAsset !$= "" || %assetItem.metalnessImageAsset !$= "") &&
-         getAssetImportConfigValue("Materials/CreateComposites", "1") == 1 &&
-         getAssetImportConfigValue("Materials/AlwaysPresentImageMaps", "0") == 0)
+         getAssetImportConfigValue("Materials/CreateComposites", "1") == 1)
       {
          %assetItem.roughnessImageAsset.skip = true;
          %assetItem.AOImageAsset.skip = true;
@@ -236,15 +264,20 @@ function AssetBrowser::prepareImportMaterialAsset(%this, %assetItem)
          
          %compositeAssetPath = AssetBrowser.dirHandler.currentAddress @ "/";
          %saveAsPath = %compositeAssetPath @ "/" @ %assetItem.assetName @ "_composite.png";
-         %compositeAsset = AssetBrowser.addImportingAsset("Image", "", %assetItem, %assetItem.assetName @ "_composite");
+         
+         ImportActivityLog.add("Auto-Generated Composite Map from ORM maps");
+         
+         %compositeAsset = AssetBrowser.addImportingAsset("ImageAsset", "", %assetItem, %assetItem.assetName @ "_composite");
          %compositeAsset.generatedAsset = true;
          %compositeAsset.filePath = %saveAsPath;
          
          %assetItem.compositeImageAsset = %compositeAsset;
-      }
+      }*/
    }
    
    %assetItem.processed = true;
+   
+   refreshImportAssetWindow();
 }
 
 function AssetBrowser::findMaterialMapFileWSuffix(%this, %fileDir, %filename, %fileExt, %suffixesList)
@@ -303,31 +336,21 @@ function AssetBrowser::importMaterialAsset(%this, %assetItem)
    };
    
    //check dependencies
-   %importItem = ImportAssetTree.findItemByObjectId(%assetItem);
-   if(ImportAssetTree.isParentItem(%importItem))
+   %dependencySlotId = 0;
+   for(%i=0; %i < %assetItem.childAssetItems.count(); %i++)
    {
-        %imageSlot = 0;
-        %childId = ImportAssetTree.getChild(%importItem);
-        while(%childId > 0)
-        {
-            %dependencyAssetItem = ImportAssetTree.getItemObject(%childId);
-            
-            if(%dependencyAssetItem.skip)
-            {
-               %childId = ImportAssetTree.getNextSibling(%childId);
-               continue;
-            }
-            
-            %depAssetType = %dependencyAssetItem.assetType;
-            if(%depAssetType $= "Image")
-            {
-               %matSet = "%newAsset.imageMap"@%imageSlot@"=\"@Asset="@%moduleName@":"@%dependencyAssetItem.assetName@"\";";
-               eval(%matSet);
-            }
-            
-            %childId = ImportAssetTree.getNextSibling(%childId);  
-            %imageSlot++;
-        }
+      %childAssetItem = %assetItem.childAssetItems.getKey(%i);
+      
+      if(!isObject(%childAssetItem) || %childAssetItem.skip || %childAssetItem.processed == false)
+         continue;
+
+      %depAssetType = %childAssetItem.assetType;
+      if(%depAssetType $= "ImageAsset")
+      {
+         %matSet = "%newAsset.imageMap"@%dependencySlotId@"=\"@Asset="@%moduleName@":"@%childAssetItem.assetName@"\";";
+         eval(%matSet);
+         %dependencySlotId++;
+      }
    }
    
    %assetImportSuccessful = TamlWrite(%newAsset, %tamlpath);
@@ -364,46 +387,34 @@ function AssetBrowser::importMaterialAsset(%this, %assetItem)
       //TODO: pass along the shape's target material for this just to be sure
       %file.writeLine("   mapTo = \"" @ %assetName @ "\";"); 
       
-      if(%assetItem.diffuseImageAsset !$= "")
+      //now we re-iterate back over our child items so we can map them correctly
+      for(%i=0; %i < %assetItem.childAssetItems.count(); %i++)
       {
-         %diffuseAssetPath = %assetPath @ fileName(%assetItem.diffuseImageAsset.filePath);
-         %file.writeline("   DiffuseMap[0] = \"" @ %diffuseAssetPath @"\";");
-         %file.writeline("   DiffuseMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.diffuseImageAsset.assetName @"\";");
-      }
-      if(%assetItem.normalImageAsset)
-      {
-         %normalAssetPath = %assetPath @ fileName(%assetItem.normalImageAsset.filePath);
-         %file.writeline("   NormalMap[0] = \"" @ %normalAssetPath @"\";");
-         %file.writeline("   NormalMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.normalImageAsset.assetName @"\";");
-      }
-      if(%assetItem.roughnessImageAsset && %assetItem.roughnessImageAsset.skip == false)
-      {
-         %roughAssetPath = %assetPath @ fileName(%assetItem.roughnessImageAsset.filePath);
-         %file.writeline("   RoughMap[0] = \"" @ %roughAssetPath @"\";");
-         %file.writeline("   RoughMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.roughnessImageAsset.assetName @"\";");
-      }
-      if(%assetItem.smoothnessImageAsset && %assetItem.smoothnessImageAsset.skip == false)
-      {
-         %smoothnessAssetPath = %assetPath @ fileName(%assetItem.smoothnessImageAsset.filePath);
-         %file.writeline("   SmoothnessMap[0] = \"" @ %smoothnessAssetPath @"\";");
-         %file.writeline("   SmoothnessMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.smoothnessImageAsset.assetName @"\";");
-      }
-      if(%assetItem.metalnessImageAsset && %assetItem.metalnessImageAsset.skip == false)
-      {
-         %metalAssetPath = %assetPath @ fileName(%assetItem.metalnessImageAsset.filePath);
-         %file.writeline("   MetalMap[0] = \"" @ %metalAssetPath @"\";");
-         %file.writeline("   MetalMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.metalnessImageAsset.assetName @"\";");
-      }
-      if(%assetItem.AOImageAsset && %assetItem.AOImageAsset.skip == false)
-      {
-         %AOAssetPath = %assetPath @ fileName(%assetItem.AOImageAsset.filePath);
-         %file.writeline("   AOMap[0] = \"" @ %AOAssetPath @"\";");
-         %file.writeline("   AOMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.AOImageAsset.assetName @"\";");
-      }
-      if(%assetItem.PBRConfigMapImageAsset)
-      {
-         %file.writeline("   PBRConfigMap[0] = \"" @ %assetItem.compositeImageAsset.filePath @"\";");
-         %file.writeline("   PBRConfigMapAsset[0] = \"" @ %moduleName @ ":" @ %assetItem.compositeImageAsset.assetName @"\";");
+         %childAssetItem = %assetItem.childAssetItems.getKey(%i);
+         
+         if(!isObject(%childAssetItem) || %childAssetItem.skip || %childAssetItem.processed == false)
+            continue;
+
+         if(%childAssetItem.assetType $= "ImageAsset")
+         {
+            %mapFieldName = "";
+            if(%childAssetItem.imageType $= "Albedo")
+               %mapFieldName = "DiffuseMap";
+            else if(%childAssetItem.imageType $= "Normal")
+               %mapFieldName = "NormalMap";
+            else if(%childAssetItem.imageType $= "Metalness")
+               %mapFieldName = "MetalMap";
+            else if(%childAssetItem.imageType $= "Roughness")
+               %mapFieldName = "RoughnessMap";
+            else if(%childAssetItem.imageType $= "AO")
+               %mapFieldName = "AOMap";
+            else if(%childAssetItem.imageType $= "Composite")
+               %mapFieldName = "PBRConfigMap";
+            
+            %path = fileName(%childAssetItem.filePath);
+            %file.writeline("   "@ %mapFieldName @ "[0] = \"" @ %path @"\";");
+            %file.writeline("   "@ %mapFieldName @ "Asset[0] = \"" @ %moduleName @ ":" @ %childAssetItem.assetName @"\";");
+         }
       }
       %file.writeline("};");
       %file.writeline("//--- OBJECT WRITE END ---");
@@ -414,18 +425,18 @@ function AssetBrowser::importMaterialAsset(%this, %assetItem)
    %moduleDef = ModuleDatabase.findModule(%moduleName,1);
          
    if(!AssetBrowser.isAssetReImport)
-      AssetDatabase.addDeclaredAsset(%moduleDef, %assetPath @ "/" @ %assetName @ ".asset.taml");
+      AssetDatabase.addDeclaredAsset(%moduleDef, %tamlpath);
    else
       AssetDatabase.refreshAsset(%assetId);
 }
 
 function AssetBrowser::buildMaterialAssetPreview(%this, %assetDef, %previewData)
 {
-   %previewData.assetName = %assetDef.materialDefinitionName;
+   %previewData.assetName = %assetDef.assetName;
    %previewData.assetPath = %assetDef.scriptFile;
 
    //Lotta prepwork
-   %previewData.doubleClickCommand = %assetDef@".materialDefinitionName.reload(); "
+   /*%previewData.doubleClickCommand = %assetDef@".materialDefinitionName.reload(); "
                                    @ "$Tools::materialEditorList = \"\";"
                                    @ "EWorldEditor.clearSelection();"
                                    @ "MaterialEditorGui.currentObject = 0;"
@@ -433,7 +444,9 @@ function AssetBrowser::buildMaterialAssetPreview(%this, %assetDef, %previewData)
                                    @ "MaterialEditorGui.currentMaterial = "@%assetDef@".materialDefinitionName;"
                                    @ "MaterialEditorGui.setActiveMaterial( "@%assetDef@".materialDefinitionName );"
                                    @ "EditorGui.setEditor(MaterialEditorPlugin); "
-                                   @ "AssetBrowser.hideDialog();";
+                                   @ "AssetBrowser.hideDialog();";*/
+                                   
+   %previewData.doubleClickCommand = "AssetBrowser.editAsset(" @ %assetDef @ ");";
    
    %test = %assetDef.materialDefinitionName.diffuseMapAsset[0];
    
@@ -449,7 +462,9 @@ function AssetBrowser::buildMaterialAssetPreview(%this, %assetDef, %previewData)
    
    %previewData.assetFriendlyName = %assetDef.assetName;
    %previewData.assetDesc = %assetDef.description;
-   %previewData.tooltip = %assetDef.friendlyName @ "\n" @ %assetDef;
+   %previewData.tooltip = "Asset Name: " @ %assetDef.assetName @ "\n" @ 
+                           "Asset Type: Material Asset\n" @  
+                           "Asset Definition ID: " @  %assetDef;
 }
 
 function AssetBrowser::onMaterialAssetEditorDropped(%this, %assetDef, %position)
@@ -486,9 +501,9 @@ function GuiInspectorTypeMaterialAssetPtr::onControlDropped( %this, %payload, %p
    if( !%payload.parentGroup.isInNamespaceHierarchy( "AssetPreviewControlType_AssetDrop" ) )
       return;
 
-   %assetType = %payload.dragSourceControl.parentGroup.assetType;
-   %module = %payload.dragSourceControl.parentGroup.moduleName;
-   %assetName = %payload.dragSourceControl.parentGroup.assetName;
+   %assetType = %payload.assetType;
+   %module = %payload.moduleName;
+   %assetName = %payload.assetName;
    
    if(%assetType $= "MaterialAsset")
    {

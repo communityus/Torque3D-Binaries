@@ -89,6 +89,20 @@ function AssetBrowser::createGUIAsset(%this)
 	return %tamlpath;  
 }
 
+function AssetBrowser::inspectImportingGUIAsset(%this, %assetItem)
+{
+   AssetImportCtrl-->NewAssetsInspector.startGroup("GUI");
+   
+   AssetImportCtrl-->NewAssetsInspector.addField("GUIFile", "GUI File Path", "filename", "Intended usage case of this image. Used to map to material slots and set up texture profiles.", "", 
+                                                      "", %assetItem);
+                                                      
+   //Make this a callback so that if it's set we can callback to a validator function
+   //This function(and others for other asset types) would check if the loosefile audit window is open, and if it is, remove the file from the list
+   AssetImportCtrl-->NewAssetsInspector.addField("ScriptFile", "Script File Path", "filename", "Intended usage case of this image. Used to map to material slots and set up texture profiles.", "", 
+                                                      "", %assetItem);                                                  
+   AssetImportCtrl-->NewAssetsInspector.endGroup();                                                
+}
+
 function AssetBrowser::editGUIAsset(%this, %assetDef)
 {
    if(!isObject(%assetDef.assetName))
@@ -99,6 +113,51 @@ function AssetBrowser::editGUIAsset(%this, %assetDef)
    
    GuiEditContent(%assetDef.assetName);  
 }
+
+//Renames the asset
+function AssetBrowser::renameGUIAsset(%this, %assetDef, %newAssetName)
+{
+   %newScriptLooseFilename = renameAssetLooseFile(%assetDef.scriptFile, %newAssetName);
+   
+   if(!%newScriptLooseFilename $= "")
+      return;
+      
+   %newGUILooseFilename = renameAssetLooseFile(%assetDef.guiFile, %newAssetName);
+   
+   if(!%newGUILooseFilename $= "")
+      return;
+      
+   %assetDef.scriptFile = %newScriptLooseFilename;
+   %assetDef.guiFile = %newGUILooseFilename;
+   %assetDef.saveAsset();
+   
+   renameAssetFile(%assetDef, %newAssetName);
+}
+
+//Deletes the asset
+function AssetBrowser::deleteGUIAsset(%this, %assetDef)
+{
+   AssetDatabase.deleteAsset(%assetDef.getAssetId(), true);
+}
+
+//Moves the asset to a new path/module
+function AssetBrowser::moveGUIAsset(%this, %assetDef, %destination)
+{
+   %currentModule = AssetDatabase.getAssetModule(%assetDef.getAssetId());
+   %targetModule = AssetBrowser.getModuleFromAddress(%destination);
+   
+   %newAssetPath = moveAssetFile(%assetDef, %destination);
+   
+   if(%newAssetPath $= "")
+      return false;
+
+   moveAssetLooseFile(%assetDef.guifile, %destination);
+   moveAssetLooseFile(%assetDef.scriptFile, %destination);
+   
+   AssetDatabase.removeDeclaredAsset(%assetDef.getAssetId());
+   AssetDatabase.addDeclaredAsset(%targetModule, %newAssetPath);
+}
+
 
 function AssetBrowser::buildGUIAssetPreview(%this, %assetDef, %previewData)
 {

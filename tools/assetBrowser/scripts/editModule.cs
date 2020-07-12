@@ -1,10 +1,64 @@
 //
+function AssetBrowser::ConvertFolderIntoModule(%this, %folderName)
+{
+   if(!isDirectory("data/" @ %folderName))
+      return;
+      
+   AssetBrowser_AddModule-->moduleName.text = %folderName;
+   AssetBrowser_addModuleWindow.callbackFunction = "AssetBrowser.loadDirectories();";
+   
+   AssetBrowser_addModuleWindow.CreateNewModule();
+}
+
 function AssetBrowser::CreateNewModule(%this)
 {
    Canvas.pushDialog(AssetBrowser_AddModule); 
    AssetBrowser_addModuleWindow.selectWindow();  
    
-   AssetBrowser_addModuleWindow.callbackFunction = "AssetBrowser.loadFilters();";
+   AssetBrowser_addModuleWindow.callbackFunction = "AssetBrowser.promptNewModuleFolders();";
+}
+
+function AssetBrowser::promptNewModuleFolders(%this)
+{
+   MessageBoxYesNo("Create Folders?", 
+         "Do you want to create some common folders for organization of your new Module?", 
+         "AssetBrowser.makeModuleFolders();",  //if yes, make the foldesr
+         "AssetBrowser.loadDirectories();");  //if no, just refresh
+}
+
+function AssetBrowser::makeModuleFolders(%this)
+{
+   %moduleId = AssetBrowser.newModuleId;
+   %moduleDef = ModuleDatabase.findModule(%moduleId);
+   %modulePath = %moduleDef.ModulePath;
+   
+   %count = 0;
+   %defaultModuleFolders[%count++] = "datablocks";
+   %defaultModuleFolders[%count++] = "terrains";
+   %defaultModuleFolders[%count++] = "postFXs";
+   %defaultModuleFolders[%count++] = "levels";
+   %defaultModuleFolders[%count++] = "shapes";
+   %defaultModuleFolders[%count++] = "guis";
+   %defaultModuleFolders[%count++] = "scripts";
+   %defaultModuleFolders[%count++] = "scripts/client";
+   %defaultModuleFolders[%count++] = "scripts/server";
+   
+   for(%i=0; %i <= %count; %i++)
+   {
+      %this.dirHandler.createFolder(%modulePath @ "/" @ %defaultModuleFolders[%i]);
+   }
+   
+   AssetBrowser.loadDirectories();
+}
+
+function AssetBrowser::createNewEditorTool(%this)
+{
+   Canvas.pushDialog(AssetBrowser_AddModule); 
+   AssetBrowser_addModuleWindow.selectWindow(); 
+   
+   AssetBrowser_addModuleWindow.callbackFunction = "AssetBrowser.loadDirectories();";
+   
+   AssetBrowser_addModuleWindow.CreateNewModule();
 }
 
 function AssetBrowser_editModule::saveModule(%this)
@@ -116,6 +170,15 @@ function AssetBrowser::editModuleInfo(%this)
    ModuleEditInspector.startGroup("Dependencies");
    ModuleEditInspector.addField("ModuleDependencies", "Module Dependencies", "ModuleDependenciesButton", "", "", "", AssetBrowser.tempModule);
    ModuleEditInspector.endGroup();
+}
+
+function AssetBrowser::editModuleScript(%this)
+{
+   %moduleDef = ModuleDatabase.findModule(AssetBrowser.selectedModule, 1);
+   
+   %scriptFile = %moduleDef.ModuleScriptFilePath;
+   
+   EditorOpenFileInTorsion(makeFullPath(%scriptFile), 0);
 }
 
 function AssetBrowser::renameModule(%this)

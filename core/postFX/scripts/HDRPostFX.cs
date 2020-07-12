@@ -287,7 +287,7 @@ function HDRPostFX::onEnabled( %this )
    // Set the right global shader define for HDR.
    if ( %format $= "GFXFormatR10G10B10A2" )
       addGlobalShaderMacro( "TORQUE_HDR_RGB10" );
-   else if ( %format $= "GFXFormatR16G16B16A16" )
+   else if ( %format $= "GFXFormatR16G16B16A16F" )
       addGlobalShaderMacro( "TORQUE_HDR_RGB16" );
                         
    echo( "HDR FORMAT: " @ %format );
@@ -339,10 +339,10 @@ function HDRPostFX::onAdd( %this )
 function HDRPostFX::populatePostFXSettings(%this)
 {
    PostEffectEditorInspector.startGroup("HDR - General");
-   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::keyValue", "Key Value", "float", "", $HDRPostFX::keyValue, "");
-   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::minLuminace", "Minimum Luminance", "float", "", $HDRPostFX::minLuminace, "");
-   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::whiteCutoff", "White Cutoff", "float", "", $HDRPostFX::whiteCutoff, "");
-   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::adaptRate", "Brightness Adapt Rate", "float", "", $HDRPostFX::adaptRate, "");
+   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::keyValue", "Key Value", "range", "", $HDRPostFX::keyValue, "0 1 10");
+   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::minLuminace", "Minimum Luminance", "range", "", $HDRPostFX::minLuminace, "0 1 10");
+   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::whiteCutoff", "White Cutoff", "range", "", $HDRPostFX::whiteCutoff, "0 1 10");
+   PostEffectEditorInspector.addField("$PostFXManager::Settings::HDR::adaptRate", "Brightness Adapt Rate", "range", "", $HDRPostFX::adaptRate, "0 1 10");
    PostEffectEditorInspector.endGroup();
    
    PostEffectEditorInspector.startGroup("HDR - Bloom");

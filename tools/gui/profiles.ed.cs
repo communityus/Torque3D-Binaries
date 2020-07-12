@@ -86,6 +86,14 @@ new GuiControlProfile (ToolsGuiSolidDefaultProfile : ToolsGuiDefaultProfile)
    category = "Tools";
 };
 
+if( !isObject( ToolsGuiDefaultNonModalProfile ) )
+new GuiControlProfile (ToolsGuiDefaultNonModalProfile : ToolsGuiDefaultProfile)
+{
+   opaque = false;
+   modal = false;
+   category = "Tools";
+};
+
 if( !isObject( ToolsGuiTransparentProfile ) )
 new GuiControlProfile (ToolsGuiTransparentProfile)
 {
@@ -192,6 +200,12 @@ new GuiControlProfile (ToolsGuiTextProfile)
    category = "Tools";
 };
 
+if( !isObject( ToolsGuiTextBoldProfile ) )
+new GuiControlProfile (ToolsGuiTextBoldProfile : ToolsGuiTextProfile)
+{
+   fontType = "Noto Sans Bold";
+};
+
 if( !isObject( ToolsGuiTextBoldCenterProfile ) )
 new GuiControlProfile (ToolsGuiTextBoldCenterProfile : ToolsGuiTextProfile)
 {
@@ -207,6 +221,13 @@ new GuiControlProfile (ToolsGuiTextRightProfile : ToolsGuiTextProfile)
 {
    justify = "right";
    category = "Tools";
+};
+
+if( !isObject( ToolsGuiTextBoldRightProfile ) )
+new GuiControlProfile (ToolsGuiTextBoldRightProfile : ToolsGuiTextRightProfile)
+{
+   fontType = "Noto Sans Bold";
+   fontSize = 16;
 };
 
 if( !isObject( ToolsGuiTextCenterProfile ) )
@@ -284,7 +305,7 @@ new GuiControlProfile( ToolsGuiTextEditProfile )
    fontColor = EditorSettings.value("Theme/fieldTextColor");
    fontColorSEL = EditorSettings.value("Theme/fieldBGSELColor");
    fontColorHL = EditorSettings.value("Theme/fieldTextSELColor");
-   fontColorNA = EditorSettings.value("Theme/fieldTextSELColor");
+   fontColorNA = EditorSettings.value("Theme/fieldTextNAColor");
    textOffset = "4 2";
    autoSizeWidth = false;
    autoSizeHeight = true;
@@ -630,6 +651,8 @@ new GuiControlProfile( ToolsGuiTreeViewProfile )
    opaque = false;
    border = false;
    category = "Tools";
+   
+   fontColors[9] = "0 128 128"; //for active/selection of elements
 };
 
 if( !isObject( ToolsGuiTextPadProfile ) )
@@ -649,6 +672,8 @@ new GuiControlProfile( ToolsGuiTextPadProfile )
    fontColor = EditorSettings.value("Theme/fieldTextColor");   
    fontColorHL = EditorSettings.value("Theme/fieldTextHLColor");   
    fontColorSEL = EditorSettings.value("Theme/fieldTextSELColor");   
+   
+   cursorColor = EditorSettings.value("Theme/fieldTextSELColor"); 
    border = 0;
    category = "Tools";
 };
@@ -1209,8 +1234,10 @@ singleton GuiControlProfile (inspectorStyleRolloutNoHeaderProfile)
 singleton GuiControlProfile (IconDropdownProfile) 
 {
    border = -2;
+   opaque = true;
+   border = true;
    category = "Editor";
    //bitmap = "./icon-dropdownbar";
    
-   fillColor = "0 0 0";
+   fillColor = EditorSettings.value("Theme/headerColor");
 };

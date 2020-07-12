@@ -18,11 +18,15 @@ function makedirectoryHandler(%targetTree, %folderExclusionList, %searchFilter)
 
 function directoryHandler::loadFolders(%this, %path, %parentId)
 {
+   %modulesList = ModuleDatabase.findModules();
+   
    //utilize home dir project setting here
    %paths = getDirectoryList(%path);
    for(%i=0; %i < getFieldCount(%paths); %i++)
    {
       %childPath = getField(%paths, %i);
+      
+      %fullChildPath = makeFullPath(%path @ "/" @ %childPath);
       
       %folderCount = getTokenCount(%childPath, "/");
       
@@ -30,17 +34,31 @@ function directoryHandler::loadFolders(%this, %path, %parentId)
       {
          %folderName = getToken(%childPath, "/", %f);
          
+         %parentName = %this.treeCtrl.getItemText(%parentId);
+         
          //we don't need to display the shadercache folder
-         if(%parentId == 1 && (%folderName $= "shaderCache" || %folderName $= "cache"))
+         if(%parentName $= "Data" && (%folderName $= "shaderCache" || %folderName $= "cache"))
             continue;
          
          %iconIdx = 3;
          
-         if(ModuleDatabase.findModule(%folderName) !$= "")
-            %iconIdx = 1;
+         //Lets see if any modules match our current path)
+         for(%m=0; %m < getWordCount(%modulesList); %m++)
+         {
+            %moduleDef = getWord(%modulesList, %m);
+            
+            if(%moduleDef.modulePath $= %fullChildPath)
+            {
+               %iconIdx = 1;
+               break;
+            }
+         }
+         
+         //if(ModuleDatabase.findModule(%folderName) !$= "")
+         //   %iconIdx = 1;
          
          %searchFoldersText = %this.searchFilter;
-         if(%searchFoldersText !$= "Search Folders...")
+         if(%searchFoldersText !$= "")
          {
             if(strstr(strlwr(%folderName), strlwr(%searchFoldersText)) != -1)
             {
@@ -105,7 +123,7 @@ function directoryHandler::navigateTo(%this, %address, %historyNav, %selectionNa
 
    //find our folder tree and action on it tree
    %folderId = %this.getFolderTreeItemFromAddress(%address);
-   
+
    %this.oldAddress = %this.currentAddress;   
    %this.currentAddress = %address;
    %this.selectedItem = %folderId;
@@ -179,7 +197,15 @@ function directoryHandler::getFolderTreeItemFromAddress(%this, %address)
    //break down the address
    %folderCount = getTokenCount(%address, "/");
 
-   %curItem = 0;
+   if(startsWith(%address, "Data/") || startsWith(%address, "Tools/") || startsWith(%address, "Core/"))
+   {
+      %curItem = %this.treeCtrl.findChildItemByName(1, "Modules");
+   }
+   else
+   {
+      %curItem = 1;
+   }
+   
    %rebuiltPath = "";
    for(%f=0; %f < %folderCount; %f++)
    {
@@ -196,7 +222,15 @@ function directoryHandler::expandTreeToAddress(%this, %address)
    %folderCount = getTokenCount(%address, "/");
    %this.treeCtrl.expandItem(0);
 
-   %curItem = 0;
+   if(startsWith(%address, "Data/") || startsWith(%address, "Tools/") || startsWith(%address, "Core/"))
+   {
+      %curItem = %this.treeCtrl.findChildItemByName(1, "Modules");
+   }
+   else
+   {
+      %curItem = 1;
+   }
+   
    %rebuiltPath = "";
    for(%f=0; %f < %folderCount; %f++)
    {
@@ -204,4 +238,84 @@ function directoryHandler::expandTreeToAddress(%this, %address)
       %curItem = %this.treeCtrl.findChildItemByName(%curItem, %folderName);
       %this.treeCtrl.expandItem(%curItem);
    }
+   
+   %this.treeCtrl.expandItem(0);
+}
+
+function directoryHandler::createFolder(%this, %folderPath)
+{
+   //make a dummy file
+   %file = new FileObject();
+   %file.openForWrite(%folderPath @ "/test");
+   %file.close();
+   
+   fileDelete(%folderPath @ "/test");
+}
+
+function directoryHandler::deleteFolder(%this, %folderPath)
+{
+   %fullPath = makeFullPath(%folderPath);
+   
+   //First, wipe out any files inside the folder first
+   %file = findFirstFileMultiExpr( %fullPath @ "/*.*", true);
+
+   while( %file !$= "" )
+   {      
+      %success = fileDelete( %file );
+      
+      if(!%success)
+      {
+         error("doDeleteFolder - unable to delete file " @ %file);
+         return;         
+      }
+      
+      %file = findNextFileMultiExpr( %fullPath @ "/*.*" );
+   }
+   
+   //next, walk through and delete any subfolders that may be remaining
+   while(IsDirectory(%fullPath) && fileDelete(%fullPath) == 0)
+   {
+      //We couldn't delete the folder, so get a directory list and recurse through it, deleteing them as we go
+      %paths = getDirectoryList(%fullPath);
+      for(%i=0; %i < getFieldCount(%paths); %i++)
+      {
+         %childPath = getField(%paths, %i);
+         %this.deleteFolder(%fullPath @ "/" @ %childPath);
+      }
+   }  
+}
+
+function directoryHandler::copyFolder(%this, %fromFolder, %toFolder)
+{
+   if(!isDirectory(%toFolder))
+      %this.createFolder(%toFolder);
+      
+   %file = findFirstFileMultiExpr( %fromFolder @ "/*.*", false);
+
+   while( %file !$= "" )
+   {    
+      %copiedFile = strreplace(%file, %fromFolder, %toFolder);
+      
+      %copiedPath = filePath(%copiedFile);
+      
+      if(!isDirectory(%copiedPath))
+         createPath(%copiedPath);
+   
+      %success = pathCopy(%file, %copiedFile, false);
+      if(!%success)
+         error("copyProjectFolder() - failed to copy file: " @ %file);
+      
+      %file = findNextFileMultiExpr( %fullPath @ "/*.*" );
+   }
+   
+   //do sub directories
+   %paths = getDirectoryList(%fromFolder);
+   for(%i=0; %i < getFieldCount(%paths); %i++)
+   {
+      %childPath = getField(%paths, %i);
+         
+      %this.copyFolder(%fromFolder @ %childPath @ "/", %toFolder @ %childPath @ "/");
+   }
+      
+   return true;
 }

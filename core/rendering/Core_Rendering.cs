@@ -11,6 +11,7 @@ function Core_Rendering::onCreate(%this)
    
    $pref::ReflectionProbes::BakeResolution = ProjectSettings.value("Rendering/ProbeCaptureResolution", "64");
    
+   exec("./scripts/graphicsOptions.cs");
    exec("./scripts/renderManager.cs");
    exec("./scripts/gfxData/clouds.cs");
    exec("./scripts/gfxData/commonMaterialData.cs");
@@ -18,6 +19,7 @@ function Core_Rendering::onCreate(%this)
    exec("./scripts/gfxData/shaders.cs");
    exec("./scripts/gfxData/terrainBlock.cs");
    exec("./scripts/gfxData/water.cs");
+   exec("./scripts/gfxData/warningTerrainMat.cs");
 }
 
 function Core_Rendering::onDestroy(%this)
@@ -41,7 +43,7 @@ function Core_Rendering::initClient(%this)
    
    //Autodetect settings if it's our first time
    if($pref::Video::autoDetect)
-      GraphicsMenu.Autodetect();
+      AutodetectGraphics();
 
    postFXInit();
    
